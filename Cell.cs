@@ -34,6 +34,13 @@ namespace _2048 {
       }
       return output + this.value.ToString();
     }
+
+    public virtual Cell GetCopy() {
+      Cell copy = (Cell)Activator.CreateInstance(this.GetType());
+      copy.value = this.value;
+      if (!this.spawning) copy.ToString();
+      return copy;
+    }
   }
 
   public class EmptyCell : Cell {

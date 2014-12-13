@@ -10,6 +10,15 @@ namespace _2048 {
       var evt = Points;
       if (evt != null) evt(points);
     }
+
+    public static event EndHandler End;
+
+    public delegate void EndHandler(Boolean won);
+
+    public static void EndGame(Boolean won) {
+      var evt = End;
+      if (evt != null) evt(won);
+    }
   }
 }
 

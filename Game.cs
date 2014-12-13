@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -29,6 +29,15 @@ namespace _2048 {
 
     private int points = 0;
 
+    private Boolean gameover = false;
+
+    private string header = "\n" +
+      "\t _,  _, . ,  _,\n" +
+      "\t'_) |.| |_| (_)\n" +
+      "\t/_. |_|   | (_)\n\n\n";
+
+    private string footer = "ESC to Exit\t R to Restart\t Arrows/WASD to Move\n";
+
     public Game() : this(4,4) {}
 
     public Game(int width, int height) {
@@ -41,10 +50,31 @@ namespace _2048 {
       }
 
       Messenger.Points += HandlePoints;
+      Messenger.End += HandleEnd;
     }
 
     private void HandlePoints(int points) {
       this.points += points;
+    }
+
+    private void Won() {
+      Console.Clear();
+      Console.WriteLine("{0}Congrats! You won with {1} points!\n{2}", this.header, this.points, this.footer);
+      this.gameover = true;
+    }
+
+    private void Lost() {
+      Console.Clear();
+      Console.WriteLine("{0}Oh Noes :( You lost with {1} points!\n{2}", this.header, this.points, this.footer);
+      this.gameover = true;
+    }
+
+    private void HandleEnd(Boolean won) {
+      if (won) {
+        Won();
+        return;
+      }
+      Lost();
     }
 
     protected virtual List<Position> GetAvailableCells(Type type) {
@@ -65,10 +95,36 @@ namespace _2048 {
 
     protected virtual void Spwan() {
       var list = GetAvailableCells();
+
+      if (list.Count == 0 && IsGameOver()) {
+        Messenger.EndGame(false);
+        return;
+      }
+
       Random random = new Random();
       Position pos = list[random.Next(0, list.Count)];
 
       field[pos.x, pos.y] = new Cell();
+    }
+
+    protected virtual Boolean IsGameOver() {
+      Direction[] all = {
+        Direction.Up,
+        Direction.Down,
+        Direction.Left,
+        Direction.Right
+      };  
+
+
+      var movement = false;
+      foreach (Direction dir in all) {
+        var columns = GetColumns(dir);
+        for (var i = 0; i < columns.Count; i++) {
+          movement = Shift(columns [i], true) || movement;
+        }
+      }
+    
+      return !movement;
     }
 
     protected List<Position> GetColumn(int i, int row, Direction dir) {
@@ -106,37 +162,62 @@ namespace _2048 {
       return list;
     }
 
-    protected Boolean Shift(List<Position> column) {
+    protected Cell[,] Copy() {
+      var width = field.GetLength(0);
+      var height = field.GetLength(1);
+      var copyField = new Cell[width, height];
+
+      for (var i = 0; i < width; i++) {
+        for (var j = 0; j < height; j++) {
+          copyField[i, j] = field[i, j].GetCopy();
+        }
+      }
+
+      return copyField;
+    }
+
+    protected Boolean Shift(List<Position> column, Boolean dryRun) {
       var alreadyMerged = new List<Cell>();
       var movement = false;
+
+      var usedField = dryRun ? Copy() : field;
 
       for (var i = 1; i < column.Count; i++) {
         for (var j = i; j > 0; j--) {
           var cur = column [j];
           var next = column [j - 1];
-          var result = field [next.x, next.y].AddressedBy(field [cur.x, cur.y]);
+          var result = usedField[next.x, next.y].AddressedBy(usedField[cur.x, cur.y]);
 
           if (result == CellAction.Swap) {
-            var nextCell = field [next.x, next.y];
-            field [next.x, next.y] = field [cur.x, cur.y];
-            field [cur.x, cur.y] = nextCell;
+            var nextCell = usedField[next.x, next.y];
+            usedField[next.x, next.y] = usedField[cur.x, cur.y];
+            usedField[cur.x, cur.y] = nextCell;
             movement = true;
             continue;
           }
 
           if (result == CellAction.Merge) {
-            var target = field[next.x, next.y];
-            if (alreadyMerged.Contains(target) || alreadyMerged.Contains(field[cur.x, cur.y])) continue;
+            var target = usedField[next.x, next.y];
+            if (alreadyMerged.Contains(target) || alreadyMerged.Contains(usedField[cur.x, cur.y])) continue;
             target.value = target.value * 2;
             Messenger.AddPoints(target.value);
+
+            if (target.value >= 2048) {
+              Messenger.EndGame(true);
+            }
+
             alreadyMerged.Add(target);
-            field [cur.x, cur.y] = new EmptyCell();
+            usedField[cur.x, cur.y] = new EmptyCell();
             movement = true;
           }
         }
       }
 
       return movement;
+    }
+
+    protected Boolean Shift(List<Position> column) {
+      return Shift(column, false);
     }
 
     public virtual void Move(Direction dir) {
@@ -158,16 +239,13 @@ namespace _2048 {
     }
 
     public void Print(Direction dir) {
-      string output = "\n" +
-        "\t _,  _, . ,  _,\n" +
-        "\t'_) |.| |_| (_)\n" +
-        "\t/_. |_|   | (_)\n\n\n";
+      if (gameover) return;
 
       var line = string.Concat(Enumerable.Repeat("\t_\t", field.GetLength(0))) + "\n";
       output += line;
       for (var i = 0; i < field.GetLength(0); i++) {
         output += "\n|";
-       
+
         for (var j = 0; j < field.GetLength(1); j++) {
           output += "\t" + field [i, j] + "\t";
         }
@@ -176,6 +254,7 @@ namespace _2048 {
       output += line;
 
       output += this.points + " Points \t Went " + dir;
+      output += this.footer;
 
       Console.Clear();
       Console.WriteLine(output);

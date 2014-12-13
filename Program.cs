@@ -3,7 +3,7 @@ using _2048;
 
 class MainClass {
   public static void Main(string[] args) {
-    var game = new Game(4, 4);
+    var game = new Game();
 
     game.Move();
 
@@ -24,6 +24,10 @@ class MainClass {
       case ConsoleKey.D:
       case ConsoleKey.RightArrow:
         game.Move(Direction.Right);
+        break;
+      case ConsoleKey.R:
+        game = new Game();
+        game.Move();
         break;
       case ConsoleKey.Escape:
         Environment.Exit(0);
