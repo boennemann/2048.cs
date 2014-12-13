@@ -53,8 +53,11 @@ namespace _2048 {
 
   public class BonusCell : EmptyCell {
     public override CellAction AddressedBy(Cell other) {
-      // emit event for bonus points
-      return base.AddressedBy(other);
+      var action = base.AddressedBy(other);
+      if (action != CellAction.Block) {
+        Messenger.AddPoints(other.value * 10);
+      }
+      return action;  
     }
 
     public override string ToString() {

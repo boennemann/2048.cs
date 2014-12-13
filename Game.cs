@@ -27,6 +27,8 @@ namespace _2048 {
   public class Game {
     protected Cell[,] field;
 
+    private int points = 0;
+
     public Game() : this(4,4) {}
 
     public Game(int width, int height) {
@@ -37,6 +39,12 @@ namespace _2048 {
           field [i, j] = new EmptyCell();
         }
       }
+
+      Messenger.Points += HandlePoints;
+    }
+
+    private void HandlePoints(int points) {
+      this.points += points;
     }
 
     protected virtual List<Position> GetAvailableCells(Type type) {
@@ -120,6 +128,7 @@ namespace _2048 {
             var target = field[next.x, next.y];
             if (alreadyMerged.Contains(target) || alreadyMerged.Contains(field[cur.x, cur.y])) continue;
             target.value = target.value * 2;
+            Messenger.AddPoints(target.value);
             alreadyMerged.Add(target);
             field [cur.x, cur.y] = new EmptyCell();
             movement = true;
@@ -141,15 +150,14 @@ namespace _2048 {
       if (movement || dir == Direction.Still) {
         Spwan();
       }
-      Print();
-      Console.WriteLine("Went " + dir);
+      Print(dir);
     }
 
     public void Move() {
       Move(Direction.Still);
     }
 
-    public void Print() {
+    public void Print(Direction dir) {
       string output = "\n" +
         "\t _,  _, . ,  _,\n" +
         "\t'_) |.| |_| (_)\n" +
@@ -166,6 +174,8 @@ namespace _2048 {
         output += "|\n\n";
       }
       output += line;
+
+      output += this.points + " Points \t Went " + dir;
 
       Console.Clear();
       Console.WriteLine(output);
