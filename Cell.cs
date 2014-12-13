@@ -40,6 +40,9 @@ namespace _2048 {
     public EmptyCell() : base(0) {}
 
     public override CellAction AddressedBy(Cell other) {
+      if (other is EmptyCell) {
+        return CellAction.Block;
+      }
       return CellAction.Swap;
     }
 

@@ -98,8 +98,9 @@ namespace _2048 {
       return list;
     }
 
-    protected void Shift(List<Position> column) {
+    protected Boolean Shift(List<Position> column) {
       var alreadyMerged = new List<Cell>();
+      var movement = false;
 
       for (var i = 1; i < column.Count; i++) {
         for (var j = i; j > 0; j--) {
@@ -111,6 +112,7 @@ namespace _2048 {
             var nextCell = field [next.x, next.y];
             field [next.x, next.y] = field [cur.x, cur.y];
             field [cur.x, cur.y] = nextCell;
+            movement = true;
             continue;
           }
 
@@ -120,19 +122,25 @@ namespace _2048 {
             target.value = target.value * 2;
             alreadyMerged.Add(target);
             field [cur.x, cur.y] = new EmptyCell();
+            movement = true;
           }
         }
       }
+
+      return movement;
     }
 
     public virtual void Move(Direction dir) {
+      var movement = false;
       if (dir != Direction.Still) {
         var columns = GetColumns(dir);
         for (var i = 0; i < columns.Count; i++) {
-          Shift(columns [i]);
+          movement = Shift(columns [i]) || movement;
         }
        }
-      Spwan();
+      if (movement || dir == Direction.Still) {
+        Spwan();
+      }
       Print();
       Console.WriteLine("Went " + dir);
     }
