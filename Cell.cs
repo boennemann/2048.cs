@@ -27,12 +27,12 @@ namespace _2048 {
     }
 
     public override string ToString() {
-      var output = "";
+      var output = this.value.ToString();
       if (this.spawning) {
-        output += "N";
+        output += " ✨";
         this.spawning = false;
       }
-      return output + this.value.ToString();
+      return output;
     }
 
     public virtual Cell GetCopy() {
@@ -68,7 +68,7 @@ namespace _2048 {
     }
 
     public override string ToString() {
-      return "B";
+      return "\ud83c\udf89";
     }
   }
 
@@ -78,7 +78,7 @@ namespace _2048 {
     }
 
     public override string ToString() {
-      return "X";
+      return "\ud83d\udca9";
     }
   }
 }

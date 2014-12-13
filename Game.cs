@@ -241,6 +241,8 @@ namespace _2048 {
     public void Print(Direction dir) {
       if (gameover) return;
 
+      var output = this.header;
+
       var line = string.Concat(Enumerable.Repeat("\t_\t", field.GetLength(0))) + "\n";
       output += line;
       for (var i = 0; i < field.GetLength(0); i++) {
@@ -253,7 +255,7 @@ namespace _2048 {
       }
       output += line;
 
-      output += this.points + " Points \t Went " + dir;
+      output += this.points + " Points \t Went " + dir + "\n";
       output += this.footer;
 
       Console.Clear();
