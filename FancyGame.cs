@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace _2048 {
   public class FancyGame : Game {
@@ -9,6 +9,9 @@ namespace _2048 {
       base.Spwan();
 
       var list = GetAvailableCells();
+
+      if (list.Count == 0) return;
+
       Random random = new Random();
 
       Cell cell;
