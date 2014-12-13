@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+mcs Program.cs Game.cs Cell.cs Messenger.cs && mono Program.exe
